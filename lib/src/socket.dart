@@ -297,7 +297,7 @@ class Socket extends EventEmitter {
         ondisconnect();
         break;
 
-      case ERROR:
+      case CONNECT_ERROR:
         emit('error', packet['data']);
     }
   }
@@ -397,7 +397,7 @@ class Socket extends EventEmitter {
   /// @param {Object} error object
   /// @api private
   void error(err) {
-    packet(<dynamic, dynamic>{'type': ERROR, 'data': err});
+    packet(<dynamic, dynamic>{'type': CONNECT_ERROR, 'data': err});
   }
 
   /// Disconnects this client.

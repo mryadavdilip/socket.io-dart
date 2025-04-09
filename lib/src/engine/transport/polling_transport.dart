@@ -191,7 +191,7 @@ class PollingTransport extends Transport {
         return true;
       };
 
-      PacketParser.decodePayload(data, callback: callback);
+      PacketParser.decodePayload(data, callback);
     }
   }
 
@@ -225,8 +225,7 @@ class PollingTransport extends Transport {
     }
 
     var self = this;
-    PacketParser.encodePayload(packets, supportsBinary: supportsBinary == true,
-        callback: (data) {
+    PacketParser.encodePayload(packets, callback: (data) {
       var compress = packets.any((packet) {
         var opt = packet['options'];
         return opt != null && opt['compress'] == true;

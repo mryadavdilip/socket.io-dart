@@ -60,7 +60,8 @@ class WebSocketTransport extends Transport {
     for (var i = 0; i < packets.length; i++) {
       var packet = packets[i];
       PacketParser.encodePacket(packet,
-          supportsBinary: supportsBinary, callback: (_) => send(_, packet));
+          supportsBinary: supportsBinary ?? false,
+          callback: (_) => send(_, packet));
     }
   }
 
