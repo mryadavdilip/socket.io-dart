@@ -17,8 +17,6 @@ import 'package:socket_io/src/namespace.dart';
 import 'package:socket_io_common/src/parser/parser.dart';
 import 'package:stream/stream.dart';
 
-import 'namespace.dart';
-
 /// Socket.IO client source.
 /// Old settings for backwards compatibility
 Map oldSettings = {

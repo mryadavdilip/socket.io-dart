@@ -350,12 +350,8 @@ class Socket extends EventEmitter {
   /// @api private
   void onack(packet) {
     Function ack = acks.remove(packet['id']);
-    if (ack is Function) {
 //      debug('calling ack %s with %j', packet.id, packet.data);
-      Function.apply(ack, packet['data']);
-    } else {
-//      debug('bad ack %s', packet.id);
-    }
+    Function.apply(ack, packet['data']);
   }
 
   /// Called upon client disconnect packet.
