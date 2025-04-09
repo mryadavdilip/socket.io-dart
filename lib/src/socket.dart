@@ -54,7 +54,7 @@ class Socket extends EventEmitter {
   late Adapter adapter;
   late String id;
   late HttpRequest request;
-  var conn;
+  dynamic conn;
   Map roomMap = {};
   List roomList = [];
   Map acks = {};
@@ -79,19 +79,20 @@ class Socket extends EventEmitter {
   ///
   /// @api private
   Map buildHandshake(query) {
-    final buildQuery = () {
+    buildQuery() {
       var requestQuery = request.uri.queryParameters;
       //if socket-specific query exist, replace query strings in requestQuery
       return query != null
           ? (Map.from(query)..addAll(requestQuery))
           : requestQuery;
-    };
+    }
+
     return {
       'headers': request.headers,
       'time': DateTime.now().toString(),
       'address': conn.remoteAddress,
       'xdomain': request.headers.value('origin') != null,
-      // TODO  'secure': ! !this.request.connectionInfo.encrypted,
+      // TODO #57  'secure': ! !this.request.connectionInfo.encrypted,
       'issued': DateTime.now().millisecondsSinceEpoch,
       'url': request.uri.path,
       'query': buildQuery()

@@ -84,7 +84,7 @@ class Server {
   ///
   /// @param {http.IncomingMessage} request
   /// @param {Function} callback to be called with the result: `fn(err, success)`
-  void checkRequest(HttpRequest req, [Function? fn]) {
+  dynamic checkRequest(HttpRequest req, [Function? fn]) {
     var origin = req.headers.value('origin') ?? req.headers.value('referer');
 
     // file:// URLs produce a null Origin which can't be authorized via echo-back
@@ -104,9 +104,9 @@ class Server {
       try {
         var parts = Uri.parse(origin);
         var port = parts.port;
-        var ok = _origins.indexOf(parts.host + ':' + port.toString()) >= 0 ||
-            _origins.indexOf(parts.host + ':*') >= 0 ||
-            _origins.indexOf('*:' + port.toString()) >= 0;
+        var ok = _origins.indexOf('${parts.host}:$port') >= 0 ||
+            _origins.indexOf('${parts.host}:*') >= 0 ||
+            _origins.indexOf('*:$port') >= 0;
 
         return fn!(null, ok);
       } catch (ex) {
@@ -141,7 +141,6 @@ class Server {
           if (err) {
             return next(Exception(err));
           }
-          ;
           if (!authorized) {
             return next(Exception('Not authorized'));
           }
@@ -377,7 +376,7 @@ class Server {
   /// @api public
   Namespace of(name, [fn]) {
     if (name.toString()[0] != '/') {
-      name = '/' + name;
+      name = '/$name';
     }
 
     if (!nsps.containsKey(name)) {

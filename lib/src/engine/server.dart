@@ -134,7 +134,7 @@ class Server extends Engine {
   /// @return {Boolean} whether the request is valid
   /// @api private
 
-  void verify(SocketConnect connect, bool upgrade, fn) {
+  dynamic verify(SocketConnect connect, bool upgrade, fn) {
     // transport check
     var req = connect.request;
     var transport = req.uri.queryParameters['transport'];
@@ -261,7 +261,7 @@ class Server extends Engine {
     var id = generateId(connect);
 
     _logger.fine('handshaking client $id');
-    var transport;
+    dynamic transport;
     var req = connect.request;
     try {
       transport = Transports.newInstance(transportName, connect);
@@ -285,11 +285,8 @@ class Server extends Engine {
 
     if (cookie?.isNotEmpty == true) {
       transport.on('headers', (headers) {
-        headers['Set-Cookie'] = '$cookie=${Uri.encodeComponent(id)}' +
-            (cookiePath?.isNotEmpty == true ? '; Path=$cookiePath' : '') +
-            (cookiePath?.isNotEmpty == true && cookieHttpOnly == true
-                ? '; HttpOnly'
-                : '');
+        headers['Set-Cookie'] =
+            '$cookie=${Uri.encodeComponent(id)}${cookiePath?.isNotEmpty == true ? '; Path=$cookiePath' : ''}${cookiePath?.isNotEmpty == true && cookieHttpOnly == true ? '; HttpOnly' : ''}';
       });
     }
 
@@ -433,11 +430,10 @@ class Server extends Engine {
           : code;
       var length = utf8.encode(message).length;
       socket!.add('HTTP/1.1 400 Bad Request\r\n'
-              'Connection: close\r\n'
-              'Content-type: text/html\r\n'
-              'Content-Length: $length\r\n'
-              '\r\n' +
-          message);
+          'Connection: close\r\n'
+          'Content-type: text/html\r\n'
+          'Content-Length: $length\r\n'
+          '\r\n$message');
     }
     socket?.close();
   }

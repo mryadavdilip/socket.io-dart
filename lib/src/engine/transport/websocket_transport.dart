@@ -32,7 +32,7 @@ class WebSocketTransport extends Transport {
 
   @override
   void send(List<Map> packets) {
-    var send = (data, Map packet) {
+    send(data, Map packet) {
       _logger.fine('writing "$data"');
 
       // always creates a new object since ws modifies it
@@ -50,7 +50,7 @@ class WebSocketTransport extends Transport {
 
 //      this.writable = false;
       connect!.websocket?.add(data);
-    };
+    }
 
 //    function onEnd (err) {
 //      if (err) return self.onError('write error', err.stack);
@@ -61,6 +61,7 @@ class WebSocketTransport extends Transport {
       var packet = packets[i];
       PacketParser.encodePacket(packet,
           supportsBinary: supportsBinary ?? false,
+          // ignore: no_wildcard_variable_uses
           callback: (_) => send(_, packet));
     }
   }

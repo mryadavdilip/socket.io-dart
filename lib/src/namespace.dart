@@ -71,7 +71,7 @@ class Namespace extends EventEmitter {
   /// @param {Socket} socket that will get added
   /// @param {Function} last fn call in the middleware
   /// @api private
-  void run(socket, Function fn) {
+  dynamic run(socket, Function fn) {
     var fns = this.fns.sublist(0);
     if (fns.isEmpty) return fn(null);
 

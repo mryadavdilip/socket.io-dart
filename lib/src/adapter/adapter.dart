@@ -10,12 +10,13 @@
 /// Copyright (C) 2017 Potix Corporation. All Rights Reserved.
 import 'dart:async';
 import 'package:socket_io/src/namespace.dart';
+import 'package:socket_io/src/socket.dart';
 import 'package:socket_io_common/src/parser/parser.dart';
 import 'package:socket_io/src/util/event_emitter.dart';
 
 abstract class Adapter {
   Map nsps = {};
-  Map<String, _Room> rooms = {};
+  Map<String, Room> rooms = {};
   Map<String, Map> sids = {};
 
   void add(String id, String room, [dynamic Function([dynamic]) fn]);
@@ -37,15 +38,14 @@ class _MemoryStoreAdapter extends EventEmitter implements Adapter {
   @override
   Map nsps = {};
   @override
-  Map<String, _Room> rooms = {};
+  Map<String, Room> rooms = {};
 
   @override
   Map<String, Map> sids = {};
   late Encoder encoder;
   late Namespace nsp;
 
-  _MemoryStoreAdapter(Namespace nsp) {
-    this.nsp = nsp;
+  _MemoryStoreAdapter(this.nsp) {
     encoder = nsp.server.encoder;
   }
 
@@ -60,7 +60,7 @@ class _MemoryStoreAdapter extends EventEmitter implements Adapter {
   void add(String id, String room, [dynamic Function([dynamic])? fn]) {
     sids[id] = sids[id] ?? {};
     sids[id]![room] = true;
-    rooms[room] = rooms[room] ?? _Room();
+    rooms[room] = rooms[room] ?? Room();
     rooms[room]!.add(id);
     if (fn != null) scheduleMicrotask(() => fn(null));
   }
@@ -125,7 +125,7 @@ class _MemoryStoreAdapter extends EventEmitter implements Adapter {
       'compress': flags['compress']
     };
     var ids = {};
-    var socket;
+    Socket? socket;
 
     packet['nsp'] = nsp.name;
     var encodedPackets = encoder.encode(packet);
@@ -165,7 +165,7 @@ class _MemoryStoreAdapter extends EventEmitter implements Adapter {
       [List<String> rooms = const [], dynamic Function([dynamic])? fn]) {
     var ids = {};
     var sids = [];
-    var socket;
+    Socket? socket;
 
     if (rooms.isNotEmpty) {
       for (var i = 0; i < rooms.length; i++) {
@@ -208,7 +208,7 @@ class _MemoryStoreAdapter extends EventEmitter implements Adapter {
 /// Room constructor.
 ///
 /// @api private
-class _Room {
+class Room {
   Map<String, bool> sockets = {};
   int length = 0;
 
