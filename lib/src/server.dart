@@ -63,16 +63,16 @@ class Server {
   /// @param {http.Server|Number|Object} http server, port or options
   /// @param {Object} options
   /// @api public
-  Server({server, Map? options}) {
+  Server({String? address, int? port, Map? options}) {
     options ??= {};
     path(options.containsKey('path') ? options['path'] : '/socket.io');
     serveClient(false != options['serveClient']);
     adapter = options.containsKey('adapter') ? options['adapter'] : 'default';
     origins(options.containsKey('origins') ? options['origins'] : '*:*');
     sockets = of('/');
-    if (server != null) {
+    if (port != null) {
       _ready = Future(() async {
-        await attach(server, options);
+        await attach(address: address, port: port, opts: options);
         return true;
       });
     } else {
@@ -206,8 +206,8 @@ class Server {
   /// @param {Object} options passed to engine.io
   /// @return {Server} self
   /// @api public
-  Future<void> listen(srv, [Map? opts]) async {
-    await attach(srv, opts);
+  Future<void> listen({String? address, required int port, Map? opts}) async {
+    await attach(address: address, port: port, opts: opts);
   }
 
   /// Attaches socket.io to a server or port.
@@ -216,16 +216,11 @@ class Server {
   /// @param {Object} options passed to engine.io
   /// @return {Server} self
   /// @api public
-  Future<Server> attach(dynamic srv, [Map? opts]) async {
-    if (srv is Function) {
+  Future<Server> attach({String? address, required int port, Map? opts}) async {
+    if (port is Function) {
       var msg = 'You are trying to attach socket.io to an express '
           'request handler function. Please pass a http.Server instance.';
       throw Exception(msg);
-    }
-
-    // handle a port as a string
-    if (srv is String && int.parse(srv.toString()).toString() == srv) {
-      srv = int.parse(srv.toString());
     }
 
     opts ??= {};
@@ -237,11 +232,9 @@ class Server {
     // set origins verification
     opts['allowRequest'] = checkRequest;
 
-    if (srv is num) {
-      _logger.fine('creating http server and binding to $srv');
-      var port = srv.toInt();
-      var server = StreamServer();
-      await server.start(port: port);
+    _logger.fine('creating http server and binding to $port');
+    var server = StreamServer();
+    await server.start(address: address, port: port);
 //      HttpServer.bind(InternetAddress.ANY_IP_V4, port).then((
 //          HttpServer server) {
 //        this.httpServer = server;
@@ -251,50 +244,30 @@ class Server {
 ////                    response.close();
 ////                });
 
-      var completer = Completer();
-      var connectPacket = {'type': CONNECT, 'nsp': '/'};
-      var encodedPacket = encoder.encode(connectPacket);
-      // the CONNECT packet will be merged with Engine.IO handshake,
-      // to reduce the number of round trips
-      opts['initialPacket'] = encodedPacket;
+    var completer = Completer();
+    var connectPacket = {'type': CONNECT, 'nsp': '/'};
+    var encodedPacket = encoder.encode(connectPacket);
+    // the CONNECT packet will be merged with Engine.IO handshake,
+    // to reduce the number of round trips
+    opts['initialPacket'] = encodedPacket;
 
-      _logger.fine('creating engine.io instance with opts $opts');
-      // initialize engine
-      engine = Engine.attach(server, opts);
+    _logger.fine('creating engine.io instance with opts $opts');
+    // initialize engine
+    engine = Engine.attach(server, opts);
 
-      // attach static file serving
+    // attach static file serving
 //        if (self._serveClient) self.attachServe(srv);
 
-      // Export http server
-      httpServer = server;
+    // Export http server
+    httpServer = server;
 
-      // bind to engine events
-      bind(engine!);
+    // bind to engine events
+    bind(engine!);
 
-      completer.complete();
+    completer.complete();
 
-      await completer.future;
+    await completer.future;
 //      });
-    } else {
-      var connectPacket = {'type': CONNECT, 'nsp': '/'};
-      var encodedPacket = encoder.encode(connectPacket);
-      // the CONNECT packet will be merged with Engine.IO handshake,
-      // to reduce the number of round trips
-      opts['initialPacket'] = encodedPacket;
-
-      _logger.fine('creating engine.io instance with opts $opts');
-      // initialize engine
-      engine = Engine.attach(srv, opts);
-
-      // attach static file serving
-//        if (self._serveClient) self.attachServe(srv);
-
-      // Export http server
-      httpServer = srv;
-
-      // bind to engine events
-      bind(engine!);
-    }
 
     return this;
   }
